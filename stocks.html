@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>所有股票資訊</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <!-- 導覽列 -->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">API 範例</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="stocks.html">股票資訊</a></li>
+                    <li class="nav-item"><a class="nav-link" href="meteorological.html">氣象資訊</a></li>
+                    <li class="nav-item"><a class="nav-link" href="air.html">空氣品質</a></li>
+                    <li class="nav-item"><a class="nav-link" href="qrcode.html">Qrcode</a></li>
+                    <li class="nav-item"><a class="nav-link" href="api.html">自製API</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+  <!-- 內容區 -->
+  <div class="container mt-5">
+    <h1 class="mb-4">所有股票資訊</h1>
+    
+    <!-- 搜尋欄位 -->
+    <div class="mb-4">
+      <input type="text" id="search-input" class="form-control" placeholder="輸入股票代碼或名稱進行搜尋...">
+    </div>
+
+    <!-- 資料表格 -->
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>股票代碼</th>
+          <th>股票名稱</th>
+          <th>交易量</th>
+          <th>交易金額</th>
+          <th>開盤價</th>
+          <th>最高價</th>
+          <th>最低價</th>
+          <th>收盤價</th>
+          <th>漲跌</th>
+          <th>成交筆數</th>
+        </tr>
+      </thead>
+      <tbody id="stock-table"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let allData = []; // 保存所有股票資料
+    const stockTable = document.getElementById('stock-table');
+    const searchInput = document.getElementById('search-input');
+
+    // 載入資料
+    fetch('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL')
+      .then(response => response.json())
+      .then(data => {
+        allData = data;
+        renderTable(allData); // 初始載入顯示所有資料
+      })
+      .catch(error => console.error('Error:', error));
+
+    // 渲染表格
+    function renderTable(data) {
+      stockTable.innerHTML = ''; // 清空表格內容
+      data.forEach(stock => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${stock.Code}</td>
+          <td>${stock.Name}</td>
+          <td>${stock.TradeVolume}</td>
+          <td>${stock.TradeValue}</td>
+          <td>${stock.OpeningPrice}</td>
+          <td>${stock.HighestPrice}</td>
+          <td>${stock.LowestPrice}</td>
+          <td>${stock.ClosingPrice}</td>
+          <td>${stock.Change}</td>
+          <td>${stock.Transaction}</td>
+        `;
+        stockTable.appendChild(tr);
+      });
+    }
+
+    // 搜尋功能
+    searchInput.addEventListener('input', () => {
+      const keyword = searchInput.value.toLowerCase(); // 取得輸入值
+      const filteredData = allData.filter(stock =>
+        stock.Code.toLowerCase().includes(keyword) ||
+        stock.Name.toLowerCase().includes(keyword)
+      );
+      renderTable(filteredData); // 根據搜尋結果渲染表格
+    });
+  </script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
